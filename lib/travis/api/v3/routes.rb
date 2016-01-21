@@ -27,6 +27,11 @@ module Travis::API::V3
       end
     end
 
+    resource :crons do
+      route '/startcron'
+      get :start
+    end
+
 
     resource :cron do
       capture id: :digit
