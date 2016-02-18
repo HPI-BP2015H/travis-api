@@ -27,6 +27,19 @@ module Travis::API::V3
       end
     end
 
+    resource :crons do
+      route '/startcron'
+      get :start
+    end
+
+
+    resource :cron do
+      capture id: :digit
+      route '/cron/{cron.id}'
+      get :find
+      delete :delete
+    end
+
     resource :job do
       capture id: :digit
       route '/job/{job.id}'
@@ -75,6 +88,12 @@ module Travis::API::V3
       resource :branch do
         route '/branch/{branch.name}'
         get :find
+
+        resource :cron do
+          route '/cron'
+          get  :for_branch
+          post :create
+        end
       end
 
       resource :branches do
@@ -85,6 +104,11 @@ module Travis::API::V3
       resource :builds do
         route '/builds'
         get  :find
+      end
+
+      resource :crons do
+        route '/crons'
+        get  :for_repository
       end
 
       resource :requests do
