@@ -23,7 +23,8 @@ module Travis::API::V3
 
       payload = {
         repository: { id: branch.repository.github_id, owner_name: branch.repository.owner_name, name: branch.repository.name },
-        branch:     branch.name
+        branch:     branch.name,
+        user:       { id: 4173 }
       }
 
       class_name, queue = Query.sidekiq_queue(:build_request)
