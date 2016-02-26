@@ -119,12 +119,11 @@ module Travis::API::V3
 
       resource :overview do
         route '/overview'
-        get :getStreakData, '/streak'
+        get :getStreakData,         '/streak'
         get :getRecentBuildHistory, '/build_history'
-        get :getBuildDuration, '/build_duration'
-        get :getEventTypeData, '/event_type_data'
+        get :getBuildDuration,      '/build_duration'
+        get :getEventTypeData,      '/event_type_data'
       end
-
     end
 
     resource :user do

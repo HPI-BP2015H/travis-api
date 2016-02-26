@@ -7,13 +7,13 @@ module Travis::API::V3
       data = []
       for build in builds do
         data.push ({
-          "id" => build.id,
-          "number" => build.number,
-          "state" => build.state,
+          "id"       => build.id,
+          "number"   => build.number,
+          "state"    => build.state,
           "duration" => build.duration
         })
       end
-      return [{build_duration: data}]
+      [{build_duration: data}]
     end
   end
 end
