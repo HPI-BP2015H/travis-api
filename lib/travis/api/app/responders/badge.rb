@@ -14,6 +14,7 @@ module Travis::Api::App::Responders
         first_build_of_streak = Travis::API::V3::Models::Build.where(:repository_id => resource.id, :branch => resource.default_branch, :state => 'passed', :event_type => ['push', 'cron']).where("id > ?", fail_id).order("id ASC").select(:created_at).first
         streak = first_build_of_streak ? (((Time.now - first_build_of_streak.created_at)/(60*60*24)).floor) : 0
 
+        color = streak > 0 ? '#4c1' : '#e05d44'
         add_width = streak.to_s.length * 6
         days = 'days'
         if streak == 1
@@ -29,8 +30,8 @@ module Travis::Api::App::Responders
                 <stop offset="1" stop-opacity=".1"/>
               </linearGradient>
               <rect rx="3" width="' + (78 + add_width).to_s + '" height="20" fill="#555"/>
-              <rect rx="3" x="38" width="' + (41 + add_width).to_s + '" height="20" fill="#4c1"/>
-              <path fill="#4c1" d="M38 0h4v20h-4z"/>
+              <rect rx="3" x="38" width="' + (41 + add_width).to_s + '" height="20" fill="' + color + '"/>
+              <path fill="' + color + '" d="M38 0h4v20h-4z"/>
               <rect rx="3" width="' + (78 + add_width).to_s + '" height="20" fill="url(#a)"/>
               <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
                 <text x="19.5" y="15" fill="#010101" fill-opacity=".3">streak</text>
