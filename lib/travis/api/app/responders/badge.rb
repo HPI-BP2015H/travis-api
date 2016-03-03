@@ -8,7 +8,12 @@ module Travis::Api::App::Responders
     def apply
       set_headers
       if params.has_key?('streak')
-        streak = 2
+
+        last_failing_build = Travis::API::V3::Models::Build.where(:repository_id => resource.id, :branch => resource.default_branch, :state => ['failed', 'canceled', 'errored'], :event_type => ['push', 'cron']).order("id DESC").select(:id).first
+        fail_id = (last_failing_build != nil) ? last_failing_build.id : 0
+        first_build_of_streak = Travis::API::V3::Models::Build.where(:repository_id => resource.id, :branch => resource.default_branch, :state => 'passed', :event_type => ['push', 'cron']).where("id > ?", fail_id).order("id ASC").select(:created_at).first
+        streak = first_build_of_streak ? (((Time.now - first_build_of_streak.created_at)/(60*60*24)).floor) : 0
+
         add_width = streak.to_s.length * 6
         days = 'days'
         if streak == 1
