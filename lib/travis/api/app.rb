@@ -4,12 +4,14 @@ require 'active_record_postgres_variables'
 
 # now actually load travis
 require 'travis'
+require 'travis/amqp'
 require 'travis/model'
-require 'travis/support/amqp'
 require 'travis/states_cache'
 require 'rack'
 require 'rack/protection'
-require 'rack/contrib'
+require 'rack/contrib/config'
+require 'rack/contrib/jsonp'
+require 'rack/contrib/post_body_content_type_parser'
 require 'dalli'
 require 'memcachier'
 require 'rack/cache'
@@ -18,6 +20,7 @@ require 'active_record'
 require 'redis'
 require 'gh'
 require 'raven'
+require 'raven/integrations/rack'
 require 'sidekiq'
 require 'metriks/reporter/logger'
 require 'metriks/librato_metrics_reporter'
@@ -178,7 +181,7 @@ module Travis::Api
 
       def self.setup_travis
         Travis::Async.enabled = true
-        Travis::Amqp.config = Travis.config.amqp
+        Travis::Amqp.setup(Travis.config.amqp)
 
         setup_database_connections
 
@@ -199,8 +202,10 @@ module Travis::Api
         Travis::Database.connect
 
         if Travis.config.logs_database
-          Log.establish_connection 'logs_database'
-          Log::Part.establish_connection 'logs_database'
+          pool_size = ENV['DATABASE_POOL_SIZE']
+          Travis.config.logs_database[:pool] = pool_size.to_i if pool_size
+
+          Travis::LogsModel.establish_connection 'logs_database'
         end
       end
 

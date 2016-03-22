@@ -15,14 +15,15 @@ module Travis::API::V3
       return service_index(env) if env['PATH_INFO'.freeze] == ?/.freeze
       metrics         = @metrics_processor.create
       access_control  = AccessControl.new(env)
-      factory, params = routes.factory_for(env['REQUEST_METHOD'.freeze], env['PATH_INFO'.freeze])
       env_params      = params(env)
+      factory, params = routes.factory_for(env['REQUEST_METHOD'.freeze], env['PATH_INFO'.freeze])
+
 
       raise NotFound unless factory
       metrics.name_after(factory)
 
       filtered = factory.filter_params(env_params)
-      service  = factory.new(access_control, filtered.merge(params))
+      service  = factory.new(access_control, filtered.merge(params), env['rack.input'.freeze])
 
       metrics.tick(:prepare)
       result   = service.run

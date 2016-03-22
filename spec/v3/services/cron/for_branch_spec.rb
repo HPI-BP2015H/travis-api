@@ -6,6 +6,21 @@ describe Travis::API::V3::Services::Cron::ForBranch do
   let(:cron)  { Travis::API::V3::Models::Cron.create(branch: branch, interval:'daily') }
   let(:parsed_body) { JSON.load(body) }
 
+  before do
+    Travis::Features.activate_owner(:cron, repo.owner)
+  end
+
+  describe "find cron job for branch with feature disabled" do
+    before     { Travis::Features.deactivate_owner(:cron, repo.owner)   }
+    before     { get("/v3/repo/#{repo.id}/branch/#{branch.name}/cron")   }
+    example { expect(parsed_body).to be == {
+      "@type"         => "error",
+      "error_type"    => "not_found",
+      "error_message" => "cron not found (or insufficient access)",
+      "resource_type" => "cron"
+    }}
+  end
+
   describe "fetching all crons by repo id" do
     before     { cron }
     before     { get("/v3/repo/#{repo.id}/branch/#{branch.name}/cron")     }
@@ -16,7 +31,8 @@ describe Travis::API::V3::Services::Cron::ForBranch do
       "@representation"     => "standard",
       "@permissions"        => {
           "read"            => true,
-          "delete"          => false },
+          "delete"          => false,
+          "start"           => true },
       "id"                  => cron.id,
       "repository"          => {
           "@type"           => "repository",

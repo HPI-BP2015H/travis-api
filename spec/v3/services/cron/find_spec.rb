@@ -6,6 +6,21 @@ describe Travis::API::V3::Services::Cron::Find do
   let(:cron)  { Travis::API::V3::Models::Cron.create(branch: branch, interval:'daily') }
   let(:parsed_body) { JSON.load(body) }
 
+  before do
+    Travis::Features.activate_owner(:cron, repo.owner)
+  end
+
+  describe "find cron job with feature disabled" do
+    before     { Travis::Features.deactivate_owner(:cron, repo.owner)   }
+    before     { get("/v3/cron/#{cron.id}")   }
+    example    { expect(parsed_body).to be == {
+        "@type"               => "error",
+        "error_type"          => "not_found",
+        "error_message"       => "cron not found (or insufficient access)",
+        "resource_type"       => "cron"
+    }}
+  end
+
   describe "fetching a cron job by id" do
     before     { get("/v3/cron/#{cron.id}")     }
     example    { expect(last_response).to be_ok }
@@ -15,7 +30,8 @@ describe Travis::API::V3::Services::Cron::Find do
         "@representation"     => "standard",
         "@permissions"        => {
             "read"            => true,
-            "delete"          => false },
+            "delete"          => false,
+            "start"           => true },
         "id"                  => cron.id,
         "repository"          => {
             "@type"           => "repository",
@@ -73,7 +89,8 @@ describe Travis::API::V3::Services::Cron::Find do
       "@representation"     => "standard",
       "@permissions"        => {
           "read"            => true,
-          "delete"          => false },
+          "delete"          => false,
+          "start"           => true },
       "id"                  => cron.id,
       "repository"          => {
           "@type"           => "repository",

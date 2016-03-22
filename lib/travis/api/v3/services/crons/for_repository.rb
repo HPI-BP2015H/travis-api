@@ -3,7 +3,9 @@ module Travis::API::V3
     paginate
 
     def run!
-      query.find(find(:repository))
+      repo = find(:repository)
+      raise InsufficientAccess unless Travis::Features.owner_active?(:cron, repo.owner)
+      query.find(repo)
     end
   end
 end
