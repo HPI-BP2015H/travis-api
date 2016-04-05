@@ -59,6 +59,10 @@ module Travis::API::V3
     def post(*args)
       current_resource.add_service('POST'.freeze, *args)
     end
+    
+    def delete(*args)
+      current_resource.add_service('DELETE'.freeze, *args)
+    end
 
     def draw_routes
       resources.each do |resource|

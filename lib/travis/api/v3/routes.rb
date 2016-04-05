@@ -73,10 +73,10 @@ module Travis::API::V3
       route '/repo/({repository.id}|{repository.slug})'
       get :find
 
-      post :enable,  '/enable'
-      post :disable, '/disable'
-      post :star,    '/star'
-      post :unstar,  '/unstar'
+      post :enable,    '/enable'
+      post :disable,   '/disable'
+      post :star,      '/star'
+      post :unstar,    '/unstar'
 
       resource :branch do
         route '/branch/{branch.name}'
@@ -91,6 +91,15 @@ module Travis::API::V3
       resource :builds do
         route '/builds'
         get  :find
+      end
+
+      resource :dependencies do
+        route ''
+        get :findDependencies,      '/dependencies'
+        post :create,               '/dependencies'
+        delete :delete,             '/dependencies'
+
+        get :findDependants,        '/dependants'
       end
 
       resource :requests do

@@ -9,6 +9,7 @@ module Travis::API::V3
     Broadcasts    = Module.new { extend Services }
     Build         = Module.new { extend Services }
     Builds        = Module.new { extend Services }
+    Dependencies  = Module.new { extend Services }
     Job           = Module.new { extend Services }
     Jobs          = Module.new { extend Services }
     Lint          = Module.new { extend Services }
