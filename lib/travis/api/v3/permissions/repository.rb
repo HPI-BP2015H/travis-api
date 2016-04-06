@@ -21,5 +21,9 @@ module Travis::API::V3
     def create_request?
       write?
     end
+
+    def create_dependency?
+      write?
+    end
   end
 end

@@ -20,15 +20,19 @@ module Travis::API::V3
       repository
     end
 
-    private
-
-    def find!
-      return by_slug if slug
+    def find_by_slug_or_id(slug, id)
+      return by_slug(slug) if slug
       return Models::Repository.find_by_id(id) if id
       raise WrongParams, 'missing repository.id'.freeze
     end
 
-    def by_slug
+    private
+
+    def find!
+      find_by_slug_or_id(slug, id)
+    end
+
+    def by_slug(slug)
       owner_name, name = slug.split('/')
       Models::Repository.where(owner_name: owner_name, name: name, invalidated_at: nil).first
     end
