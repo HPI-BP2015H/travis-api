@@ -73,10 +73,10 @@ module Travis::API::V3
       route '/repo/({repository.id}|{repository.slug})'
       get :find
 
-      post :enable,    '/enable'
-      post :disable,   '/disable'
-      post :star,      '/star'
-      post :unstar,    '/unstar'
+      post :enable,  '/enable'
+      post :disable, '/disable'
+      post :star,    '/star'
+      post :unstar,  '/unstar'
 
       resource :branch do
         route '/branch/{branch.name}'
