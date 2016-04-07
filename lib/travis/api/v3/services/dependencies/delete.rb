@@ -1,6 +1,6 @@
 module Travis::API::V3
   class Services::Dependencies::Delete < Service
-    result_type :repository
+    result_type :dependency
     params :dependency_id, :dependency_slug
 
     def run!
@@ -10,7 +10,6 @@ module Travis::API::V3
       raise NotFound.new(:dependency) unless relation = query(:dependency).find(dependency, dependant)
       access_control.permissions(relation).delete!
       relation.destroy
-      return dependency
     end
 
   end

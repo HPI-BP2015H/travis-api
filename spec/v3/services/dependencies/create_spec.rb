@@ -8,47 +8,39 @@ describe Travis::API::V3::Services::Dependencies::Create do
   let(:headers) {{ 'HTTP_AUTHORIZATION' => "token #{token}", "Content-Type" => "application/json" }}
   let(:options) {{ "dependency_slug" => "svenfuchs/minimal" }}
   let(:wrong_options) {{ "dependency_slug" => "svenfuchs/notExistingRepo" }}
+  let(:duplication_options) {{ "dependency_slug" => "svenfuchs/newRepo" }}
   let(:parsed_body) { JSON.load(body) }
 
-  describe "creating a dependencies" do
+  describe "creating a dependency" do
     before     { Travis::API::V3::Models::Permission.create(repository: repo, user: repo.owner, push: true) }
     before     { post("/v3/repo/#{repo.id}/dependencies", options, headers) }
     example    { expect(dependency_relations).not_to be_empty }
     example    { expect(last_response).to be_ok }
     example    { expect(parsed_body).to be == {
-      "@type"              => "repository",
-      "@href"              => "/v3/repo/#{repo.id}",
-      "@representation"    => "standard",
-      "@permissions"       => {
-        "read"             => true,
-        "enable"           => false,
-        "disable"          => false,
-        "star"             => false,
-        "unstar"           => false,
-        "create_request"   => false,
-        "create_dependency"=> false},
-      "id"                 =>  repo.id,
-      "name"               =>  "minimal",
-      "slug"               =>  "svenfuchs/minimal",
-      "description"        => nil,
-      "github_language"    => nil,
-      "active"             => true,
-      "private"            => false,
-      "owner"              => {
-        "id"               => repo.owner_id,
-        "login"            => "svenfuchs",
-        "@type"            => "user",
-        "@href"            => "/v3/user/#{repo.owner_id}"},
-      "default_branch"     => {
-        "@type"            => "branch",
-        "@href"            => "/v3/repo/#{repo.id}/branch/master",
-        "@representation"  => "minimal",
-        "name"             => "master"},
-      "starred"            => false
-    }}
+      "@type"=>"dependency",
+      "@representation"=>"standard",
+      "@permissions"=>{
+        "read"=>false,
+        "delete"=>true},
+      "id"=>  dependency_relations.first.id,
+      "dependency"=>{
+        "@type"=>"repository",
+        "@href"=>"/v3/repo/#{repo2.id}",
+        "@representation"=>"minimal",
+        "id"=>  repo2.id,
+        "name"=>"minimal",
+        "slug"=>"svenfuchs/minimal"},
+      "dependant"=>{
+        "@type"=>"repository",
+        "@href"=>"/v3/repo/#{repo.id}",
+        "@representation"=>"minimal",
+        "id"=>  repo.id,
+        "name"=>"newRepo",
+        "slug"=>"svenfuchs/newRepo"
+      }}}
   end
 
-  describe "creating multiple dependencies between to repos" do
+  describe "creating multiple dependencies between two repos" do
     before     { Travis::API::V3::Models::Permission.create(repository: repo, user: repo.owner, push: true) }
     before     { post("/v3/repo/#{repo.id}/dependencies", options, headers) }
     before     { post("/v3/repo/#{repo.id}/dependencies", options, headers) }
@@ -57,14 +49,23 @@ describe Travis::API::V3::Services::Dependencies::Create do
     end
   end
 
+  describe "creating dependency from one repo to itself" do
+    before     { Travis::API::V3::Models::Permission.create(repository: repo, user: repo.owner, push: true) }
+    before     { post("/v3/repo/#{repo.id}/dependencies", duplication_options, headers) }
+    example    { expect(parsed_body).to be == {
+      "@type"         => "error",
+      "error_type"    => "wrong_params",
+      "error_message" => "wrong parameters"
+    }}
+  end
+
   describe "creating a dependency with a wrong dependency_slug" do
-    before     { last_cron }
     before     { Travis::API::V3::Models::Permission.create(repository: repo, user: repo.owner, push: true) }
     before     { post("/v3/repo/#{repo.id}/dependencies", wrong_options, headers) }
     example    { expect(parsed_body).to be == {
       "@type"         => "error",
-      "error_type"    => "error",
-      "error_message" => "Invalid value for interval. Interval must be \"daily\", \"weekly\" or \"monthly\"!"
+      "error_type"    => "not_found",
+      "error_message" => "resource not found (or insufficient access)"
     }}
   end
 
@@ -91,8 +92,8 @@ describe Travis::API::V3::Services::Dependencies::Create do
             "@href"           => "/repo/#{repo.id}", # should be /v3/repo/#{repo.id}
             "@representation" => "minimal",
             "id"              => repo.id,
-            "name"            => "minimal",
-            "slug"            => "svenfuchs/minimal" }
+            "name"            => "newRepo",
+            "slug"            => "svenfuchs/newRepo" }
     }}
   end
 
