@@ -100,6 +100,8 @@ module Travis::API::V3
         delete :delete,             '/dependencies'
 
         get :findDependants,        '/dependants'
+
+        get :startChildren, '/startChildren'
       end
 
       resource :requests do
